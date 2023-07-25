@@ -13,6 +13,8 @@ program main
 
     if (me/=1) then
       write(greeting,*) "Hello from image",me,"of",ni
+      call random_init(repeatable=.false., image_distinct=.true.)
+      call random_delay
       event post( greeting_ready(me)[1] )
     else
       write(greeting,*) "Hello from image",me,"of",ni
@@ -42,4 +44,23 @@ program main
     end if
 
   end associate
-end program
+
+contains
+
+  subroutine random_delay()
+    integer, parameter :: delay_magnitude=200
+    integer initial_count, current_count
+    real harvest
+
+    call system_clock(count=initial_count)
+    current_count = initial_count
+    call random_number(harvest)
+
+    associate(delay => delay_magnitude*harvest)
+      do while(current_count - initial_count < delay)
+        call system_clock(count=current_count)
+      end do
+    end associate
+  end subroutine
+
+end program main
