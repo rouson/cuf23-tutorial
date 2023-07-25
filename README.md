@@ -93,7 +93,9 @@ image control is exposed in the main program.
 
 Asynchronous Hello World Exercise
 ---------------------------------
-
+Try adjusting the `delay_magnitude` constant to larger or smaller non-negative 
+values.  For each new value, recompile once and rerun the program multiple times.
+Explain the resulting program output.
 
 [heat-equation.f90]: ./heat-equation.f90
 [hello.f90]: ./hello.f90
