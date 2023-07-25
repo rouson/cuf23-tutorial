@@ -1,24 +1,31 @@
 Coarray Fortran Tutorial 
 ========================
 
-This directory contains three standalone paraall programs:
+* [Overview](#overview)
+* [Heat Equation Solver](#heat-equation-solver)
+* [Heat Equation Exercise](#heat-equation-exercise)
+* [Asynchronous Hello World Exercise](#asynchronous-hello-world-exercise)
+
+Overview
+--------
+This directory contains three standalone parallel Fortran 2018 programs:
 
 * An unsteady 2D heat equation solver: [heat-equation.f90] 
-* A simple "Hello, world" program: [hello.f90]
-* An asynchronous "Hello, world" program: [async-hello.f90]
+* A simple "Hello, world!" program: [hello.f90]
+* An asynchronous "Hello, world!" program: [async-hello.f90]
 
+These programs demonstrate Fortran's parallel features commonly referred to as
+"Coarray Fortran."
 
-file contains a parallel solver for the
-unsteady 2D heat equation written in Fortran 2018.  The numerical algorithm uses
-2nd-order-accurate central finite differencing in space and 1st-order-accurate
-explicit Euler advancement in time.
-
-Downloading, Building, and Running
-----------------------------------
 ### Prerequisites
-* The [GCC], NAG, HPE Cray, or Intel Fortran 2018 compilers.
+* The [GCC], NAG, HPE Cray, or Intel Fortran compilers
 * _Only if using [GCC]_: The [OpenCoarrays] compiler wrapper (`caf`) and program
   launcher (`cafrun`)
+
+Heat Equation Solver
+--------------------
+The numerical algorithm uses 2nd-order-accurate central finite differencing
+in space and 1st-order-accurate explicit Euler advancement in time.
 
 ### Parallel execution with GCC and OpenCoarrays
 With the [GCC](https://gcc.gnu.org) Fortran compiler (`gfortran`) and the
@@ -28,8 +35,7 @@ as a standalone file and run it as follows:
 caf -o heat heat-conduction.f90
 cafrun -n 2 ./heat
 ```
-or similarly for the other two programs and where you may replace `2` in the
-above line with the desired number of images.
+where you may replace `2` in the above line with the desired number of images.
 
 ### Parallel execution with the Intel `ifx` compiler
 With the Intel `ifx` Fortran compiler installed, 
@@ -38,10 +44,10 @@ ifx -o heat -coarray heat-equation.f90
 export FOR_COARRAY_NUM_IMAGES=2
 ./heat
 ```
-### Parallel execution with the Cray Fortran compiler (`ftn`)
+### Parallel execution with the Cray Fortran compiler (`ftn`) on Perlmutter
 This Cray compiler can compile the two `*hello.f90` programs.
 A compiler bug prevents the compilation of the heat equation 
-solver. On Perlmutter, execute
+solver.  Execute the following commands:
 ```
 module load PrgEnv-cray
 ftn -o async-hello async-hello.f90 
@@ -91,8 +97,7 @@ shipped off as soon the data are ready.  With the exception of one coarray
 allocation in the `define` procedure, all procedures are asynchronous and all
 image control is exposed in the main program.
 
-Asynchronous Hello World Exercise
----------------------------------
+### Asynchronous Hello World Exercise
 Try adjusting the `delay_magnitude` constant to larger or smaller non-negative 
 values.  For each new value, recompile once and rerun the program multiple times.
 Explain the resulting program output.
