@@ -1,5 +1,10 @@
 ! Copyright (c), The Regents of the University of California
 ! Terms of use are as specified in LICENSE.txt
+module kind_parameters_m
+  implicit none
+  integer, parameter :: rkind = kind(1.D0)
+end module
+ 
 module assertions_m
   !! Very simple assertion utility
   implicit none
@@ -13,14 +18,14 @@ end module assertions_m
 
 module subdomain_2D_m
   !! Discrete representation of a differentiable, two-dimensional (2D) scalar field
-  implicit none
+  use kind_parameters_m, only : rkind
 
   private
   public :: subdomain_2D_t
 
   type subdomain_2D_t 
     private
-    real, allocatable :: s_(:,:)
+    real(rkind), allocatable :: s_(:,:)
   contains
     procedure, pass(self) :: define
     procedure :: laplacian
@@ -42,7 +47,7 @@ module subdomain_2D_m
 
     module subroutine define(side, boundary_val, internal_val, n, self)
       implicit none
-      real, intent(in) :: side, boundary_val, internal_val
+      real(rkind), intent(in) :: side, boundary_val, internal_val
       integer, intent(in) :: n !! number of grid points in each coordinate direction
       class(subdomain_2D_t), intent(out) :: self
     end subroutine
@@ -59,19 +64,19 @@ module subdomain_2D_m
     pure module function values(self) result(my_values)
       implicit none
       class(subdomain_2D_t), intent(in) :: self
-      real, allocatable :: my_values(:,:)
+      real(rkind), allocatable :: my_values(:,:)
     end function
 
     pure module function dx(self) result(my_dx)
       implicit none
       class(subdomain_2D_t), intent(in) :: self
-      real my_dx
+      real(rkind) my_dx
     end function
 
     pure module function dy(self) result(my_dy)
       implicit none
       class(subdomain_2D_t), intent(in) :: self
-      real my_dy
+      real(rkind) my_dy
     end function
 
     pure module function laplacian(rhs) result(laplacian_rhs)
@@ -83,7 +88,7 @@ module subdomain_2D_m
     pure module function multiply(lhs, rhs) result(product)
       implicit none
       class(subdomain_2D_t), intent(in) :: rhs
-      real, intent(in) :: lhs
+      real(rkind), intent(in) :: lhs
       type(subdomain_2D_t) product
     end function
 
@@ -108,10 +113,10 @@ submodule(subdomain_2D_m) subdomain_2D_s
   use assertions_m, only : assert
   implicit none
 
-  real, allocatable :: halo_x(:,:)[:]
+  real(rkind), allocatable :: halo_x(:,:)[:]
   integer, parameter :: west=1, east=2
 
-  real dx_, dy_
+  real(rkind) dx_, dy_
   integer my_nx, nx, ny, me, num_subdomains, my_internal_left, my_internal_right
 
 contains
@@ -170,7 +175,7 @@ contains
 
   module procedure laplacian
     integer i, j
-    real, allocatable :: halo_left(:), halo_right(:)
+    real(rkind), allocatable :: halo_left(:), halo_right(:)
 
     call assert(allocated(rhs%s_), "subdomain_2D_t%laplacian: allocated(rhs%s_)")
     call assert(allocated(halo_x), "subdomain_2D_t%laplacian: allocated(halo_x)")
@@ -236,15 +241,16 @@ program heat_equation
   !! Parallel finite difference solver for the 2D, unsteady heat conduction partial differential equation
   use subdomain_2D_m, only : subdomain_2D_t
   use iso_fortran_env, only : int64
+  use kind_parameters_m, only : rkind
   implicit none
   type(subdomain_2D_t) T
   integer, parameter :: nx = 4096, ny = nx, steps = 50
-  real, parameter :: alpha = 1.
-  real T_sum
+  real(rkind), parameter :: alpha = 1._rkind
+  real(rkind) T_sum
   integer(int64) t_start, t_finish, clock_rate 
   integer step
 
-  call T%define(side=1., boundary_val=1., internal_val=2., n=nx)
+  call T%define(side=1._rkind, boundary_val=1._rkind, internal_val=2._rkind, n=nx)
   call T%allocate_halo_coarray
 
   associate(dt => T%dx()*T%dy()/(4*alpha))
@@ -265,7 +271,7 @@ program heat_equation
 
   call system_clock(t_finish, clock_rate)
   if (this_image()==1) then
-    print *, "walltime: ", real(t_finish - t_start) / real(clock_rate)
+    print *, "walltime: ", real(t_finish - t_start, rkind) / real(clock_rate, rkind)
     print *,"T_avg = ", T_sum/(nx*ny)
   end if
 end program
